@@ -1,8 +1,8 @@
 #include <stdbool.h>
 
-#define X 400
-#define Y 200
-#define Z 24
+#define X 480
+#define Y 420
+#define Z 211
 #define PIXEL_SIZE 8
 
 extern bool space[X][Y][Z];
