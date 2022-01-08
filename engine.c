@@ -36,11 +36,11 @@ double count_neighbours(int i, int j, int k) {
 				b = j+n;
 				c = k+o;
 
-				if (space[a%X][b%Y][c%Z])
-					nb += dist;
+				//if (space[a%X][b%Y][c%Z])
+					//nb += dist;
 
-				// if (a >= 0 && a < X && b >= 0 && b < Y && c >= 0 && c < Z && space[a][b][c])
-					// nb += dist;
+				if (a >= 0 && a < X && b >= 0 && b < Y && c >= 0 && c < Z && space[a][b][c])
+					nb += dist;
 			}
 
 	return nb;

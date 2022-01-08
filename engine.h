@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#define X 480
-#define Y 420
+#define X 180
+#define Y 120
 #define Z 211
 #define PIXEL_SIZE 2
 
