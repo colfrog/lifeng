@@ -6,13 +6,13 @@
 #include <err.h>
 
 #include "engine.h"
+#include "engine-ocl.h"
 
 static bool running = true;
 static SDL_Window *win;
 static SDL_Renderer *ren;
 
 static pthread_t thread;
-static pthread_mutex_t mtx;
 
 void *sdl_loop(void *np) {
 	SDL_Event event;
@@ -34,8 +34,10 @@ void *sdl_loop(void *np) {
 
 	SDL_DestroyRenderer(ren);
 	SDL_Quit();
+	return NULL;
 }
 
+extern float neighbours[X][Y][Z];
 void update() {
 	update_space();
 
@@ -59,26 +61,33 @@ void update() {
 			SDL_SetRenderDrawColor(ren, r, g, b, 0xff);
 			SDL_RenderFillRect(ren, &rect);
 		}
-
+	
 	SDL_RenderPresent(ren);
 }
 
 int main() {
+	init_opencl();
+	puts("Init SDL");
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		err(errno, SDL_GetError());
 
+	puts("randomize space");
 	randomize_space();
 
+	puts("creating window");
 	win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, X*PIXEL_SIZE, Y*PIXEL_SIZE, SDL_WINDOW_SHOWN);
 	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
+	puts("creating thread");
 	pthread_create(&thread, NULL, sdl_loop, NULL);
 
+	puts("initializing window");
 	SDL_Rect rect = {0, 0, X*PIXEL_SIZE, Y*PIXEL_SIZE};
 	SDL_SetRenderTarget(ren, NULL);
 	SDL_SetRenderDrawColor(ren, 0, 0, 0, 0);
 	SDL_RenderFillRect(ren, &rect);
-	while (running) {
+	while (running)
 		update();
-	}
+
+	free_opencl();
 }

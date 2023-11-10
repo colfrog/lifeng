@@ -5,8 +5,6 @@
 
 bool space[X][Y][Z];
 double N[X][Y][Z];
-static double birth_min = 4, birth_max = 7,
-	      life_min = 4, life_max = 9;
 
 void clear_space() {
 	for (int i = 0; i < X; i++)
@@ -37,10 +35,9 @@ double count_neighbour(int i, int j, int k) {
 				b = j+n;
 				c = k+o;
 
-				//if (space[a%X][b%Y][c%Z])
-					//nb += dist;
-
-				if (a >= 0 && a < X && b >= 0 && b < Y && c >= 0 && c < Z && space[a][b][c])
+				if (a >= 0 && a < X && b >= 0 &&
+				    b < Y && c >= 0 && c < Z &&
+				    space[a][b][c])
 					nb += dist;
 			}
 
@@ -65,12 +62,14 @@ void update_space() {
 				nb = N[i][j][k];
 
 				if (space[i][j][k]) {
-					if (nb < life_min || nb > life_max)
+					if (nb < LIFE_MIN || nb > LIFE_MAX)
 						space[i][j][k] = false;
 				} else {
-					if (nb > birth_min && nb < birth_max)
+					if (nb > BIRTH_MIN && nb < BIRTH_MAX)
 						space[i][j][k] = true;
 				}
 			}
 }
 
+void init_opencl() {}
+void free_opencl() {}
