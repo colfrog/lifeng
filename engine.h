@@ -1,8 +1,8 @@
 #include <stdbool.h>
 
-#define X 180
-#define Y 120
-#define Z 211
+#define X 200
+#define Y 200
+#define Z 500
 #define PIXEL_SIZE 2
 
 #define BIRTH_MIN 4

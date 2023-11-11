@@ -10,7 +10,7 @@
 #include "engine.h"
 
 bool space[X][Y][Z];
-float neighbours[X][Y][Z];
+cl_float neighbours[X][Y][Z];
 cl_int sizeX = X, sizeY = Y, sizeZ = Z;
 cl_float birth_min = BIRTH_MIN,
 	birth_max = BIRTH_MAX,
@@ -18,6 +18,8 @@ cl_float birth_min = BIRTH_MIN,
 	life_max = LIFE_MAX;
 
 cl_mem space_buffer, neighbours_buffer;
+cl_event ev_space, ev_neighbours,
+	ev_read_nb, ev_write_nb;
 cl_int ngroups;
 
 cl_device_id device;
@@ -161,7 +163,7 @@ void init_opencl() {
 	   utilization of cores
 	   • Optimal workgroup size differs across applications
 	*/
-	ngroups = 128;
+	ngroups = 512;
 	puts("allocating space");
         space_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |
 				      CL_MEM_COPY_HOST_PTR,
@@ -222,10 +224,6 @@ void init_opencl() {
 }
 
 void update_space() {
-	clEnqueueWriteBuffer(queue, neighbours_buffer, CL_TRUE, 0, 
-			     sizeof(neighbours), neighbours, 0, NULL, NULL);
-	clEnqueueWriteBuffer(queue, space_buffer, CL_TRUE, 0, 
-			     sizeof(space), space, 0, NULL, NULL);
 	/* Enqueue kernel 
 
 	   At this point, the application has created all the data structures 
@@ -241,31 +239,17 @@ void update_space() {
 	size_t global_size[3] = {X, Y, Z};
 	size_t local_size[3] = {1, 1, 1};
 	int error;
-
-	error = clSetKernelArg(kernel_neighbours, 0, sizeof(cl_mem), &space_buffer);
-	error |= clSetKernelArg(kernel_neighbours, 1, sizeof(cl_mem), &neighbours_buffer);
-	error |= clSetKernelArg(kernel_neighbours, 2, sizeof(cl_int), &sizeX);
-	error |= clSetKernelArg(kernel_neighbours, 3, sizeof(cl_int), &sizeY);
-	error |= clSetKernelArg(kernel_neighbours, 4, sizeof(cl_int), &sizeZ);
+	
 	error = clEnqueueNDRangeKernel(queue, kernel_neighbours, 3, NULL,
-				       global_size, local_size, 0, NULL, NULL); 
+				       global_size, local_size, 0, NULL, &ev_neighbours); 
 	if (error < 0)
 		err(1, "Couldn't enqueue the kernel");
-
-	error = clSetKernelArg(kernel_grow, 0, sizeof(cl_mem), &space_buffer);
-	error |= clSetKernelArg(kernel_grow, 1, sizeof(cl_mem), &neighbours_buffer);
-	error |= clSetKernelArg(kernel_grow, 2, sizeof(cl_float), &life_min);
-	error |= clSetKernelArg(kernel_grow, 3, sizeof(cl_float), &life_max);
-	error |= clSetKernelArg(kernel_grow, 4, sizeof(cl_float), &birth_min);
-	error |= clSetKernelArg(kernel_grow, 5, sizeof(cl_float), &birth_max);
-	error |= clSetKernelArg(kernel_grow, 6, sizeof(cl_int), &sizeX);
-	error |= clSetKernelArg(kernel_grow, 7, sizeof(cl_int), &sizeY);
-	error |= clSetKernelArg(kernel_grow, 8, sizeof(cl_int), &sizeZ);
+	
 	error = clEnqueueNDRangeKernel(queue, kernel_grow, 3, NULL,
-				       global_size, local_size, 0, NULL, NULL); 
+				       global_size, local_size, 0, NULL, &ev_space);
 	if (error < 0)
 		err(1, "Couldn't enqueue the kernel");
-
+	
 	/* Read the kernel's output    */
 	error = clEnqueueReadBuffer(queue, neighbours_buffer, CL_TRUE, 0, 
 				    sizeof(neighbours), neighbours, 0, NULL, NULL);

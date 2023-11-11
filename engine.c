@@ -65,7 +65,7 @@ void update_space() {
 					if (nb < LIFE_MIN || nb > LIFE_MAX)
 						space[i][j][k] = false;
 				} else {
-					if (nb > BIRTH_MIN && nb < BIRTH_MAX)
+					if (nb >= BIRTH_MIN && nb <= BIRTH_MAX)
 						space[i][j][k] = true;
 				}
 			}

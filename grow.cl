@@ -1,5 +1,5 @@
 __kernel void
-grow(global bool *space, global int *neighbours, float life_min, float life_max, float birth_min, float birth_max, int sizeX, int sizeY, int sizeZ) {
+grow(global bool *space, global float *neighbours, float life_min, float life_max, float birth_min, float birth_max, int sizeX, int sizeY, int sizeZ) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 	int z = get_global_id(2);
