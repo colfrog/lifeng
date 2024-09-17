@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 #include <SDL2/SDL.h>
 
 #include <pthread.h>
@@ -12,7 +14,7 @@ static bool running = true;
 static SDL_Window *win;
 static SDL_Renderer *ren;
 
-static pthread_t thread;
+static pthread_t input_thread;
 
 void *sdl_loop(void *np) {
 	SDL_Event event;
@@ -37,9 +39,13 @@ void *sdl_loop(void *np) {
 	return NULL;
 }
 
-extern float neighbours[X][Y][Z];
 void update() {
 	update_space();
+}
+
+void draw() {
+	if (win == NULL) {
+	}
 
 	int n, col;
 	int r, g, b;
@@ -48,7 +54,7 @@ void update() {
 		for (int j = 0; j < Y; j++) {
 			n = 0;
 			for (int k = 0; k < Z; k++)
-				if (space[i][j][k])
+				if (space[TABLE_INDEX(i, j, k)])
 					n++;
 
 			col = 0xffffff*n/Z;
@@ -74,20 +80,29 @@ int main() {
 	puts("randomize space");
 	randomize_space();
 
-	puts("creating window");
+	puts("Creating input thread");
+	pthread_create(&input_thread, NULL, sdl_loop, NULL);
+
+	puts("Creating window");
 	win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, X*PIXEL_SIZE, Y*PIXEL_SIZE, SDL_WINDOW_SHOWN);
 	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
-	puts("creating thread");
-	pthread_create(&thread, NULL, sdl_loop, NULL);
-
-	puts("initializing window");
-	SDL_Rect rect = {0, 0, X*PIXEL_SIZE, Y*PIXEL_SIZE};
-	SDL_SetRenderTarget(ren, NULL);
-	SDL_SetRenderDrawColor(ren, 0, 0, 0, 0);
-	SDL_RenderFillRect(ren, &rect);
-	while (running)
+	puts("Entering main loop");
+	struct timeval tv_current, tv_last_draw;
+	gettimeofday(&tv_last_draw, NULL);
+	draw();
+	while (running) {
 		update();
+
+		// Draw at approximately 100Hz
+		gettimeofday(&tv_current, NULL);
+		if (tv_current.tv_usec - tv_last_draw.tv_usec > 10000
+		    || tv_current.tv_sec != tv_last_draw.tv_sec) {
+			write_space();
+			draw();
+			tv_current = tv_last_draw;
+		}
+	}
 
 	free_opencl();
 }

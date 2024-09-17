@@ -9,8 +9,8 @@
 
 #include "engine.h"
 
-bool space[X][Y][Z];
-cl_float neighbours[X][Y][Z];
+bool space[X*Y*Z];
+cl_float neighbours[X*Y*Z];
 cl_int sizeX = X, sizeY = Y, sizeZ = Z;
 cl_float birth_min = BIRTH_MIN,
 	birth_max = BIRTH_MAX,
@@ -32,7 +32,7 @@ void clear_space() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++)
-				space[i][j][k] = 0;
+				space[TABLE_INDEX(i, j, k)] = 0;
 	clEnqueueWriteBuffer(queue, space_buffer, CL_TRUE, 0, 
 			     sizeof(space), space, 0, NULL, NULL);
 }
@@ -41,7 +41,7 @@ void randomize_space() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++)
-				space[i][j][k] = random() % 2;
+				space[TABLE_INDEX(i, j, k)] = random() % 2;
 	clEnqueueWriteBuffer(queue, space_buffer, CL_TRUE, 0, 
 			     sizeof(space), space, 0, NULL, NULL);
 }
@@ -249,12 +249,15 @@ void update_space() {
 				       global_size, local_size, 0, NULL, &ev_space);
 	if (error < 0)
 		err(1, "Couldn't enqueue the kernel");
-	
+}
+
+void write_space() {
 	/* Read the kernel's output    */
-	error = clEnqueueReadBuffer(queue, neighbours_buffer, CL_TRUE, 0, 
+	int error = clEnqueueReadBuffer(queue, neighbours_buffer, CL_TRUE, 0, 
 				    sizeof(neighbours), neighbours, 0, NULL, NULL);
-	error = clEnqueueReadBuffer(queue, space_buffer, CL_TRUE, 0, 
+	error |= clEnqueueReadBuffer(queue, space_buffer, CL_TRUE, 0, 
 				    sizeof(space), space, 0, NULL, NULL);
+
 	if (error < 0)
 		err(1, "Couldn't read the buffer");
 }

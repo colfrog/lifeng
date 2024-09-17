@@ -1,4 +1,4 @@
-__kernel void
+kernel void
 grow(global bool *space, global float *neighbours, float life_min, float life_max, float birth_min, float birth_max, int sizeX, int sizeY, int sizeZ) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -24,8 +24,8 @@ neighbours(global bool *space, global float *neighbours, int sizeX, int sizeY, i
 	int z = get_global_id(2);
 	int index = x + y*sizeX + z*sizeX*sizeY;
 
-	float dist;
-	float nb = 0;
+	float dist = 0;
+	int nb = 0;
 	int a, b, c;
 
 	for (float i = -1; i <= 1; i++) {
@@ -33,8 +33,8 @@ neighbours(global bool *space, global float *neighbours, int sizeX, int sizeY, i
 			for (float k = -1; k <= 1; k++) {
 				if (i == 0 && j == 0 && k == 0)
 					continue;
-				
-				dist = sqrt(i*i + j*j + k*k);
+				dist = 1.0/sqrt(i*i + j*j + k*k);
+
 				a = x+i;
 				b = y+j;
 				c = z+k;

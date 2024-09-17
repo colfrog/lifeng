@@ -3,25 +3,28 @@
 
 #include "engine.h"
 
-bool space[X][Y][Z];
-double N[X][Y][Z];
+bool space[X*Y*Z];
+double N[X*Y*Z];
+
+void write_space() {} // Already in RAM
 
 void clear_space() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++)
-				space[i][j][k] = 0;
+				space[TABLE_INDEX(i, j, k)] = 0;
 }
 
 void randomize_space() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++)
-				space[i][j][k] = random() % 2;
+				space[TABLE_INDEX(i, j, k)] = random() % 2;
 }
 
 double count_neighbour(int i, int j, int k) {
-	double dist, nb = 0;
+	double dist = 0;
+	int nb = 0;
 	int a, b, c;
 	for (int m = -1; m <= 1; m++)
 		for (int n = -1; n <= 1; n++)
@@ -29,15 +32,14 @@ double count_neighbour(int i, int j, int k) {
 				if (m == 0 && n == 0 && o == 0)
 					continue;
 
-				dist = sqrt(m*m + n*n + o*o);
-
+				dist = 1.0/sqrt(m*m + n*n + o*o);
 				a = i+m;
 				b = j+n;
 				c = k+o;
 
 				if (a >= 0 && a < X && b >= 0 &&
 				    b < Y && c >= 0 && c < Z &&
-				    space[a][b][c])
+				    space[TABLE_INDEX(a, b, c)])
 					nb += dist;
 			}
 
@@ -48,7 +50,7 @@ void count_neighbours() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++)
-				N[i][j][k] = count_neighbour(i, j, k);
+				N[TABLE_INDEX(i, j, k)] = count_neighbour(i, j, k);
 }
 
 void update_space() {
@@ -59,14 +61,14 @@ void update_space() {
 	for (int i = 0; i < X; i++)
 		for (int j = 0; j < Y; j++)
 			for (int k = 0; k < Z; k++) {
-				nb = N[i][j][k];
+				nb = N[TABLE_INDEX(i, j, k)];
 
-				if (space[i][j][k]) {
+				if (space[TABLE_INDEX(i, j, k)]) {
 					if (nb < LIFE_MIN || nb > LIFE_MAX)
-						space[i][j][k] = false;
+						space[TABLE_INDEX(i, j, k)] = false;
 				} else {
 					if (nb >= BIRTH_MIN && nb <= BIRTH_MAX)
-						space[i][j][k] = true;
+						space[TABLE_INDEX(i, j, k)] = true;
 				}
 			}
 }
