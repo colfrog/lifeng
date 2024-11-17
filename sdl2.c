@@ -80,12 +80,12 @@ int main() {
 	puts("randomize space");
 	randomize_space();
 
-	puts("Creating input thread");
-	pthread_create(&input_thread, NULL, sdl_loop, NULL);
-
 	puts("Creating window");
 	win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, X*PIXEL_SIZE, Y*PIXEL_SIZE, SDL_WINDOW_SHOWN);
 	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+
+	puts("Creating input thread");
+	pthread_create(&input_thread, NULL, sdl_loop, NULL);
 
 	puts("Entering main loop");
 	struct timeval tv_current, tv_last_draw;
