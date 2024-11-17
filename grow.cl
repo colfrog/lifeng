@@ -28,20 +28,28 @@ neighbours(global bool *space, global float *neighbours, int sizeX, int sizeY, i
 	int nb = 0;
 	int a, b, c;
 
-	for (float i = -1; i <= 1; i++) {
-		for (float j = -1; j <= 1; j++) {
-			for (float k = -1; k <= 1; k++) {
+	for (int i = -1; i <= 1; i++) {
+		for (int j = -1; j <= 1; j++) {
+			for (int k = -1; k <= 1; k++) {
 				if (i == 0 && j == 0 && k == 0)
 					continue;
-				dist = 1.0/sqrt(i*i + j*j + k*k);
+				dist = 1.0/sqrt((float) (i*i + j*j + k*k));
 
 				a = x+i;
+				if (a < 0) a = sizeX - 1;
+				else if (a == sizeX) a = 0;
+
 				b = y+j;
+				if (b < 0) b = sizeX - 1;
+				else if (b == sizeX) b = 0;
+
 				c = z+k;
+				if (c < 0) c = sizeX - 1;
+				else if (c == sizeX) c = 0;
+
 				int rindex = a + b*sizeX + c*sizeX*sizeY;
 
-				if (a >= 0 && a < sizeX && b >= 0 && b < sizeY
-				    && c >= 0 && c < sizeZ && space[rindex])
+				if (space[rindex])
 					nb += dist;
 			}
 		}
